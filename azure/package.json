@@ -1,0 +1,29 @@
+{
+  "name": "nitrogen-azure-providers",
+  "homepage": "https://github.com/nitrogenjs/providers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nitrogenjs/providers.git"
+  },
+  "author": "Tim Park <timfpark@gmail.com>",
+  "version": "0.2.0",
+  "main": "./lib",
+  "licenses": [
+    {
+      "type": "Apache",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
+  "engines": {
+    "node": "0.10.24"
+  },
+  "dependencies": {
+    "async": "~0.2.10",
+    "nitrogen": "~0.2.17",
+    "azure": "~0.9.16"
+  },
+  "devDependencies": {
+    "mocha": "~1.20.1",
+    "socket.io-client": "~0.9.17"
+  }
+}
