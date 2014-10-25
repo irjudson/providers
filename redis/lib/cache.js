@@ -1,7 +1,12 @@
 var redis = require('redis');
 
 function RedisCacheProvider(config, log) {
-    this.client = redis.createClient(config.redis_server.port, config.redis_server.host);
+    var redisServer;
+    for (var key in config.redis_servers) {
+        redisServer = config.redis_servers[key];
+    }
+
+    this.client = redis.createClient(redisServer.port, redisServer.host);
     this.log = log;
 }
 

@@ -181,7 +181,7 @@ RedisPubSubProvider.prototype.displaySubscriptions = function(callback) {
 RedisPubSubProvider.prototype.resetForTest = function(callback) {
     if (process.env.NODE_ENV === "production") return callback();
 
-    self.log.info('RedisPubSubProvider: resetting Redis store completely for test');
+    this.log.info('RedisPubSubProvider: resetting Redis store completely for test');
 
     var client = this.clientForServer(Object.keys(this.config.redis_servers)[0]);
 
