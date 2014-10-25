@@ -4,5 +4,6 @@ module.exports = {
     MemoryPubSubProvider:   require('./pubSub'),
     NullArchiveProvider:    require('./archive'),
     NullCacheProvider:      require('./nullCache'),
-    NullEmailProvider:      require('./email')
+    NullEmailProvider:      require('./email'),
+    ProxyMessageHub:        require('./messageHub')
 };
