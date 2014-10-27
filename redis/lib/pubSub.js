@@ -125,7 +125,15 @@ RedisPubSubProvider.prototype.receive = function(subscription, callback) {
     });
 };
 
-RedisPubSubProvider.prototype.ackReceive = function(subscription, callback) {
+RedisPubSubProvider.prototype.ackReceive = function(ref, success, callback) {
+    if (success) {
+        if (callback) callback();
+    } else {
+        var client = this.createClient(ref.subscription.assignment);
+        var subscriptionKey = RedisPubSubProvider.subscriptionKey(ref.subscription);
+
+        client.lpush(subscriptionKey, JSON.stringify(ref.item), callback);
+    }
 };
 
 RedisPubSubProvider.prototype.removeSubscription = function(subscription, callback) {
