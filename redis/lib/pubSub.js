@@ -121,14 +121,19 @@ RedisPubSubProvider.prototype.receive = function(subscription, callback) {
 
         self.log.debug("RedisPubSubProvider: RECEIVED on subscription: name: " + subscription.name + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter) + " item: " + JSON.stringify(item));
 
-        return callback(null, item);
+        var ref = {
+            subscription: subscription,
+            item: item
+        };
+
+        return callback(null, item, ref);
     });
 };
 
 RedisPubSubProvider.prototype.ackReceive = function(ref, success, callback) {
     if (success) {
         if (callback) callback();
-    } else {
+    } else if (ref) {
         var client = this.createClient(ref.subscription.assignment);
         var subscriptionKey = RedisPubSubProvider.subscriptionKey(ref.subscription);
 

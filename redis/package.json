@@ -6,7 +6,7 @@
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "licenses": [
     {
       "type": "Apache",
