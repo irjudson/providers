@@ -6,8 +6,6 @@ function ProxyMessageHub(config) {
 }
 
 ProxyMessageHub.prototype.send = function(context, messages, callback) {
-    console.log('ProxyMessageHub: relaying message to ' + this.config.messages_endpoint);
-
     request.post(this.config.messages_endpoint, {
         json: messages,
         headers: {
