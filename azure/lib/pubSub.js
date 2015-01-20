@@ -1,11 +1,11 @@
 var assert = require('assert')
   , async = require('async')
   , azure = require('azure')
-  , log = require('../../log')
-  , sift = require('sift')
-  , utils = require ('../../utils');
+  , sift = require('sift');
 
-function AzurePubSubProvider(config) {
+function AzurePubSubProvider(config, log) {
+    this.log = log;
+
     if (!process.env.AZURE_SERVICEBUS_NAMESPACE || !process.env.AZURE_SERVICEBUS_ACCESS_KEY) {
         return log.warn("AzurePubSubProvider: Service bus namespace or access key not configured.  Set AZURE_SERVICEBUS_NAMESPACE and AZURE_SERVICEBUS_ACCESS_KEY as environment variables to configure the azure pub sub provider.");
     }

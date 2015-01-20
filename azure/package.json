@@ -6,21 +6,22 @@
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.2.0",
+  "version": "0.3.7",
   "main": "./lib",
   "licenses": [
     {
-      "type": "Apache",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
     }
   ],
   "engines": {
     "node": "0.10.24"
   },
   "dependencies": {
-    "async": "~0.2.10",
-    "nitrogen": "~0.2.17",
-    "azure": "~0.9.16"
+    "async": "^0.2.10",
+    "azure": "^0.9.16",
+    "nitrogen": "^0.2.23",
+    "sift": "^0.2.3"
   },
   "devDependencies": {
     "mocha": "~1.20.1",

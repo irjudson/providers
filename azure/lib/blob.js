@@ -1,10 +1,11 @@
 var azure = require('azure')
-  , log = require('../../log')
   , streamifier = require('streamifier');
 
 var BLOB_CONTAINER = "blobs";
 
-function AzureBlobProvider(config) {
+function AzureBlobProvider(config, log) {
+    this.log = log;
+
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
     var azure_storage_endpoint = azure_storage_account + ".blob.core.windows.net";
@@ -12,7 +13,7 @@ function AzureBlobProvider(config) {
     this.base_endpoint = "https://" + azure_storage_endpoint;
 
     if (!azure_storage_account || !azure_storage_key) {
-        log.warn("WARNING: Azure storage account or key not configured.  Set AZURE_STORAGE_ACCOUNT and AZURE_STORAGE_KEY as environment variables to configure the azure blob provider.");
+        this.log.warn("WARNING: Azure storage account or key not configured.  Set AZURE_STORAGE_ACCOUNT and AZURE_STORAGE_KEY as environment variables to configure the azure blob provider.");
         return;
     }
 
