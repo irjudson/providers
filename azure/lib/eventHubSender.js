@@ -64,8 +64,6 @@ EventhubSender.prototype.send = function(message, callback) {
 
     callback = callback || function () {};
 
-    var deferred = Q.defer();
-
     self.initPromise.then(
         function (processor) {
             processor.send(message, undefined, function (err) {
@@ -75,8 +73,6 @@ EventhubSender.prototype.send = function(message, callback) {
     ).fail(function(err) {
         callback(err);
     });
-
-    return deferred.promise;
 };
 
 module.exports = EventhubSender;
