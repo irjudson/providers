@@ -21,7 +21,12 @@
     "async": "^0.2.10",
     "azure": "^0.9.16",
     "nitrogen": "^0.2.23",
-    "sift": "^0.2.3"
+    "sift": "^0.2.3",
+    "node-amqp-1-0": "noodlefrenzy/node-amqp-1-0",
+    "node-amqp-encoder": "noodlefrenzy/node-amqp-encoder",
+    "node-sbus": "noodlefrenzy/node-sbus",
+    "node-sbus-amqp10": "noodlefrenzy/node-sbus-amqp10",
+    "q": "^1.1.2"
   },
   "devDependencies": {
     "mocha": "~1.20.1",
