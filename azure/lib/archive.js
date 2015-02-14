@@ -1,4 +1,5 @@
-var azure = require('azure');
+var azure = require('azure')
+  , moment = require('moment');
 
 var TABLE_NAME = "messages";
 
@@ -26,7 +27,7 @@ AzureArchiveProvider.prototype.archive = function(message, callback) {
     var messageObject = message.toObject();
 
     messageObject.PartitionKey = messageObject.from;
-    messageObject.RowKey = messageObject.ts;
+    messageObject.RowKey = moment(message.ts).utc().format();
 
     messageObject.body = JSON.stringify(messageObject.body);
     messageObject.tags = JSON.stringify(messageObject.tags);
