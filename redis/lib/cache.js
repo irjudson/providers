@@ -7,6 +7,13 @@ function RedisCacheProvider(config, log) {
     }
 
     this.client = redis.createClient(redisServer.port, redisServer.host);
+
+    if (redisServer.password) {
+        this.client.auth(redisServer.password, function(err) {
+            if (err) core.log.error('redis auth error: ' + err);
+        });
+    }
+
     this.log = log;
 }
 
