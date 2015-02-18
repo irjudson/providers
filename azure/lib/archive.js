@@ -1,10 +1,10 @@
 var azure = require('azure')
-  , moment = require('moment');
+  , moment = require('moment')
+  , core = require('nitrogen-core');
 
-var TABLE_NAME = "messages";
-
-function AzureArchiveProvider(config, log) {
+function AzureArchiveProvider(config, log, callback) {
     this.log = log;
+    this.azure_table_name = config.azure_table_name || "messages";
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
 
@@ -14,27 +14,46 @@ function AzureArchiveProvider(config, log) {
     }
 
     var retryOperations = new azure.ExponentialRetryPolicyFilter();
-
+    
     this.azureTableService = azure.createTableService(
         azure_storage_account,
         azure_storage_key
     ).withFilter(retryOperations);
 
-    this.azureTableService.createTableIfNotExists(TABLE_NAME, function() {});
+    this.azureTableService.createTableIfNotExists(this.azure_table_name, callback ||
+        function (createError, created, response) {
+            if(createError){
+                log.error("Error creating table.");
+            }
+    });
 }
 
-AzureArchiveProvider.prototype.archive = function(message, callback) {
-    var messageObject = message.toObject();
+AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, callback) {
+    var options = {};
+    if(typeof(optionsOrCallback) == 'function' && !callback) {
+        callback = optionsOrCallback;
+    } else if (optionsOrCallback) {
+        options = optionsOrCallback;
+    }
 
+    var messageObject = message.toObject();
+   
     messageObject.PartitionKey = messageObject.from;
     messageObject.RowKey = moment(message.ts).utc().format();
+
+    if (options.flatten == true) {
+        var flatBody = core.services.messages.flatten(messageObject.body);
+        for (var key in flatBody) {
+          messageObject[key] = flatBody[key];
+        }        
+    }
 
     messageObject.body = JSON.stringify(messageObject.body);
     messageObject.tags = JSON.stringify(messageObject.tags);
     messageObject.response_to = JSON.stringify(messageObject.response_to);
     messageObject.visible_to = JSON.stringify(messageObject.visible_to);
 
-    this.azureTableService.insertEntity(TABLE_NAME, messageObject, callback);
+    this.azureTableService.insertEntity(this.azure_table_name, messageObject, callback);
 };
 
 module.exports = AzureArchiveProvider;
