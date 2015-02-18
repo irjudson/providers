@@ -43,6 +43,12 @@ RedisPubSubProvider.prototype.createClient = function(serverId) {
     var client = redis.createClient(server.port, server.host);
     var self = this;
 
+    if (server.password) {
+        client.auth(server.password, function(err) {
+            if (err) self.error('RedisPubSubProvider: auth error: ' + err);
+        });
+    }
+
     client.on('error', function (err) {
         self.log.error('RedisPubSubProvider: client error: ' + err);
     });
