@@ -3,7 +3,12 @@ var azure = require('azure')
   , core = require('nitrogen-core');
 
 function AzureArchiveProvider(config, log, callback) {
+    this.flatten = false;
     this.log = log;
+    if ('flatten_messages' in config) {
+        this.flatten_messages = config.flatten_messages;
+    }
+    
     this.azure_table_name = config.azure_table_name || "messages";
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
@@ -41,7 +46,7 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
     messageObject.PartitionKey = messageObject.from;
     messageObject.RowKey = moment(message.ts).utc().format();
 
-    if (options.flatten == true) {
+    if (options.flatten || this.flatten_messages) {
         var flatBody = core.services.messages.flatten(messageObject.body);
         for (var key in flatBody) {
           messageObject[key] = flatBody[key];
