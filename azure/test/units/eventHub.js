@@ -6,15 +6,29 @@ var config = {
     "serviceBusHost": process.env.SERVICE_BUS_HOST,
     "SASKeyName":     process.env.SAS_KEY_NAME,
     "SASKey":         process.env.SAS_KEY,
-    "eventHubName":   process.env.EVENT_HUB_NAME,
-    "tableStoreName": process.env.TABLE_STORE_NAME,
-    "tableStoreKey":  process.env.TABLE_STORE_KEY
+    "eventHubName":   process.env.EVENT_HUB_NAME
 };
 
-describe('eventHubMessageHub', function() {
+function validConfig(config) {
+    return (config.serviceBusHost && config.SASKey && config.SASKeyName && config.eventHubName); 
+}
 
+describe('The eventHubMessageHub', function() {
+
+// Next version of mocha
+//    before(function () {
+//        if (!validConfig(config)) {
+//            this.skip();
+//        }
+//    });
+        
     it('should be able to send a message.', function(done) {
 
+        if (!validConfig(config)) {
+            assert(false);
+            done();
+        }
+        
         var obj = {
             ts: "Mon Feb 02 2015 14:59:48 GMT-0800 (PST)",
             body: {
@@ -34,21 +48,18 @@ describe('eventHubMessageHub', function() {
 
         var ehp = new EventHubMessageHub(config);
         ehp.sendAsync(obj).then(function() {
-            console.log('SendAsync ok. sent');
+            assert(true);
         }).then(function() {
             ehp.send(obj, function (err) {
-                if (!err)
-                    console.log('Send ok. sent');
-                else
-                    console.log('Error', err);
-
-                process.exit(0);
+                if (!err) {
+                    assert(true);
+                } else {
+                    assert(false);
+                }
             });
-        }).fail(function(err) {
-            console.log('Error', err);
-            process.exit(0);
+        }).fail(function (err) {
+            assert(false);
         });
-
+        done();
     });
-
 });
