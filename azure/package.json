@@ -6,7 +6,7 @@
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.3.8",
+  "version": "0.3.10",
   "main": "./lib",
   "licenses": [
     {
@@ -15,24 +15,26 @@
     }
   ],
   "engines": {
-    "node": "0.10.24"
+    "node": "0.10.x"
   },
   "dependencies": {
     "async": "^0.2.10",
     "azure": "^0.9.16",
+    "moment": "^2.9.0",
     "nitrogen": "^0.2.23",
-    "moment": "~2.7.0",
-    "sift": "^0.2.3",
-    "node-amqp-1-0": "noodlefrenzy/node-amqp-1-0",
-    "node-amqp-encoder": "noodlefrenzy/node-amqp-encoder",
-    "node-sbus": "noodlefrenzy/node-sbus",
-    "node-sbus-amqp10": "noodlefrenzy/node-sbus-amqp10",
-    "q": "^1.1.2"
+    "nitrogen-core": "^0.3.19",
+    "node-amqp-1-0": "git+https://github.com/noodlefrenzy/node-amqp-1-0",
+    "node-amqp-encoder": "git+https://github.com/noodlefrenzy/node-amqp-encoder",
+    "node-sbus": "git+https://github.com/noodlefrenzy/node-sbus",
+    "node-sbus-amqp10": "git+https://github.com/noodlefrenzy/node-sbus-amqp10",
+    "q": "^1.1.2",
+    "sift": "^0.2.4"
   },
   "devDependencies": {
     "mocha": "~1.20.1",
     "socket.io-client": "~0.9.17",
-    "node-uuid" : "1.4.2"
+    "node-uuid": "1.4.2",
+    "winston": "^0.9.0"
   },
   "scripts": {
     "test": "NODE_ENV=test mocha"
