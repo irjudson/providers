@@ -15,6 +15,8 @@ var config = {
     "azure_eventhub_name":   process.env.AZURE_EVENTHUB_NAME
 };
 
+var consumerGroup = '$Default';
+
 function validConfig(config) {
     return (config.servicebus && config.sas_key_name && config.sas_key && config.azure_eventhub_name);
 }
@@ -53,17 +55,33 @@ describe('The eventhub', function() {
 //        }
 //    });
         
-    it('should be able to send a message.', function(done) {
+  it('should be able to send a message.', function (done) {
+        this.timeout(10000);
+        setTimeout(done, 9000);
+        
         if (!validConfig(config)) {
             assert(false);
             done();
         }
 
         var ehp = new EventHubProvider(config, log);
+        
+        ehp.eventHub.getEventProcessor(consumerGroup, function (conn_err, processor) {
+            assert.ifError(conn_err);
+            processor.init(function (rx_err, partition, payload) {
+                                assert.ifError(rx_err);
+                                assert(payload.id, message.id);
+                                processor.teardown()                                
+                                done();
+                        }, function (init_err) {
+                                assert.ifError(init_err);
+                                processor.receive();
+                                processor.teardown()
+                        });
+        });
+        
         ehp.archive(message, function (err) {
             assert.ifError(err);
-            done();
         });
-        done();
     });
 });
