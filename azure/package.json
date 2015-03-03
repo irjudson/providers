@@ -27,7 +27,8 @@
     "node-amqp-encoder": "noodlefrenzy/node-amqp-encoder",
     "node-sbus": "noodlefrenzy/node-sbus",
     "node-sbus-amqp10": "noodlefrenzy/node-sbus-amqp10",
-    "q": "^1.1.2"
+    "q": "^1.1.2",
+    "assert" : "1.3"
   },
   "devDependencies": {
     "mocha": "~1.20.1",
