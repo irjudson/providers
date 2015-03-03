@@ -1,19 +1,50 @@
 var assert = require('assert')
-  , EventHubMessageHub = require('../../lib/messageHub')
-  , Q = require('q');
+  , moment = require('moment')
+  , log = require('winston')
+  , uuid = require('node-uuid')
+  , core = require('nitrogen-core')  
+  , EventHubProvider = require('../../lib/eventhub');
+
+log.remove(log.transports.Console);
+log.add(log.transports.Console, { colorize: true, timestamp: true, level: 'info' });
 
 var config = {
-    "serviceBusHost": process.env.SERVICE_BUS_HOST,
-    "SASKeyName":     process.env.SAS_KEY_NAME,
-    "SASKey":         process.env.SAS_KEY,
-    "eventHubName":   process.env.EVENT_HUB_NAME
+    "servicebus": process.env.AZURE_SERVICE_BUS,
+    "sas_key_name": process.env.AZURE_SAS_KEY_NAME,
+    "sas_key":         process.env.AZURE_SAS_KEY,
+    "azure_eventhub_name":   process.env.AZURE_EVENTHUB_NAME
 };
 
 function validConfig(config) {
-    return (config.serviceBusHost && config.SASKey && config.SASKeyName && config.eventHubName); 
+    return (config.servicebus && config.sas_key_name && config.sas_key && config.azure_eventhub_name);
 }
 
-describe('The eventHubMessageHub', function() {
+var msg = {
+    ts: "Mon Feb 02 2015 14:59:48 GMT-0800 (PST)",
+    body: {
+        longitude: "-122.3331", latitude: "48.2332"
+    },
+    from: "54cffafea09ef731a1c09682",
+    type: 'location',
+    index_until: "Mon Feb 09 2015 14:59:48 GMT-0800 (PST)",
+    expires: "Thu Dec 31 2499 16:00:00 GMT-0800 (PST)",
+    tags: [ 'involves:54cffafea09ef731a1c09682' ],
+    response_to: [],
+    ver: 0.2,
+    updated_at: '2015-02-02T22:59:48.387Z',
+    created_at: '2015-02-02T22:59:48.387Z',
+    id: '54d00164509ef69fa13cb99d'
+};
+
+describe('The eventhub', function() {
+
+  beforeEach(function () {
+    msgId = uuid.v4();
+    message = new core.models.Message(msg);
+    message.ts = moment().valueOf();
+    message.from = msgId;
+    message.id = msgId;
+  });
 
 // Next version of mocha
 //    before(function () {
@@ -23,42 +54,15 @@ describe('The eventHubMessageHub', function() {
 //    });
         
     it('should be able to send a message.', function(done) {
-
         if (!validConfig(config)) {
             assert(false);
             done();
         }
-        
-        var obj = {
-            ts: "Mon Feb 02 2015 14:59:48 GMT-0800 (PST)",
-            body: {
-                longitude: "-122.3331", latitude: "48.2332"
-            },
-            from: "54cffafea09ef731a1c09682",
-            type: 'location',
-            index_until: "Mon Feb 09 2015 14:59:48 GMT-0800 (PST)",
-            expires: "Thu Dec 31 2499 16:00:00 GMT-0800 (PST)",
-            tags: [ 'involves:54cffafea09ef731a1c09682' ],
-            response_to: [],
-            ver: 0.2,
-            updated_at: '2015-02-02T22:59:48.387Z',
-            created_at: '2015-02-02T22:59:48.387Z',
-            id: '54d00164509ef69fa13cb99d'
-        };
 
-        var ehp = new EventHubMessageHub(config);
-        ehp.sendAsync(obj).then(function() {
-            assert(true);
-        }).then(function() {
-            ehp.send(obj, function (err) {
-                if (!err) {
-                    assert(true);
-                } else {
-                    assert(false);
-                }
-            });
-        }).fail(function (err) {
-            assert(false);
+        var ehp = new EventHubProvider(config, log);
+        ehp.archive(message, function (err) {
+            assert.ifError(err);
+            done();
         });
         done();
     });
