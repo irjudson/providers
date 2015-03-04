@@ -8,20 +8,20 @@ function EventHubProvider(config, log, callback) {
         this.flatten_messages = config.flatten_messages;
     }
     
-	var servicebus = config.servicebus || process.env.AZURE_SERVICE_BUS;
-	var sas_key_name = config.sas_key_name || process.env.AZURE_SAS_KEY_NAME;
-	var sas_key = config.sas_key || process.env.AZURE_SAS_KEY;
-	var azure_eventhub_name = config.azure_eventhub_name || process.env.AZURE_EVENTHUB_NAME;
+    var servicebus = config.servicebus || process.env.AZURE_SERVICE_BUS;
+    var sas_key_name = config.sas_key_name || process.env.AZURE_SAS_KEY_NAME;
+    var sas_key = config.sas_key || process.env.AZURE_SAS_KEY;
+    var azure_eventhub_name = config.azure_eventhub_name || process.env.AZURE_EVENTHUB_NAME;
 
     if (!sas_key_name || !sas_key) {
-        this.log.warn("WARNING: Azure SAS Key not configured.  Set AZURE_SAS_KEY_NAME and AZURE_SAS_KEY as environment variables to configure the azure sas key.");
+        this.log.error("Error: Azure SAS Key not configured.  Set AZURE_SAS_KEY_NAME and AZURE_SAS_KEY as environment variables to configure the azure sas key.");
         return;
     }
-	
-	if (!azure_eventhub_name) {
-		this.log.warn("WARNING: Azure eventhub name not configured. Set AZURE_EVENTHUB_NAME as environment variables to configure the azure eventhub.");
-	}
-	
+    
+    if (!azure_eventhub_name) {
+        this.log.error("Error: Azure eventhub name not configured. Set AZURE_EVENTHUB_NAME as environment variables to configure the azure eventhub.");
+    }
+    
     this.eventHub = sbus.EventHubClient(servicebus, azure_eventhub_name, sas_key_name, sas_key);
 }
 
@@ -42,7 +42,7 @@ EventHubProvider.prototype.archive = function(message, optionsOrCallback, callba
         }        
     }
     
-	this.eventHub.send(message, message.from, callback);
+    this.eventHub.send(message, message.from, callback);
 };
 
 module.exports = EventHubProvider;
