@@ -8,7 +8,7 @@ function AzureArchiveProvider(config, log, callback) {
     if ('flatten_messages' in config) {
         this.flatten_messages = config.flatten_messages;
     }
-    
+
     this.azure_table_name = config.azure_table_name || "messages";
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
@@ -19,30 +19,30 @@ function AzureArchiveProvider(config, log, callback) {
     }
 
     var retryOperations = new azure.ExponentialRetryPolicyFilter();
-    
+
     this.azureTableService = azure.createTableService(
         azure_storage_account,
         azure_storage_key
     ).withFilter(retryOperations);
 
     this.azureTableService.createTableIfNotExists(this.azure_table_name, callback ||
-        function (createError, created, response) {
-            if(createError){
-                log.error("Error creating table.");
+        function (err, created, response) {
+            if (err) {
+                log.error("Error creating Azure messages table: " + err);
             }
     });
 }
 
 AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, callback) {
     var options = {};
-    if(typeof(optionsOrCallback) == 'function' && !callback) {
+    if (typeof(optionsOrCallback) == 'function' && !callback) {
         callback = optionsOrCallback;
     } else if (optionsOrCallback) {
         options = optionsOrCallback;
     }
 
     var messageObject = message.toObject();
-   
+
     messageObject.PartitionKey = messageObject.from;
     messageObject.RowKey = moment(message.ts).utc().format();
 
@@ -50,7 +50,7 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
         var flatBody = core.services.messages.flatten(messageObject.body);
         for (var key in flatBody) {
           messageObject[key] = flatBody[key];
-        }        
+        }
     }
 
     messageObject.body = JSON.stringify(messageObject.body);
