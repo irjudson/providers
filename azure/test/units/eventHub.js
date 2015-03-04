@@ -56,30 +56,30 @@ describe('The eventhub', function() {
 //    });
         
   it('should be able to send a message.', function (done) {
+        // This allows the test to run asynchronously so the message can get all 
+        // the way through eventhub and get caught by the reciever (which calls done());
         this.timeout(10000);
         setTimeout(done, 9000);
         
-        if (!validConfig(config)) {
-            assert(false);
-            done();
-        }
+        assert(!validConfig(config));
+
 
         var ehp = new EventHubProvider(config, log);
         
         ehp.eventHub.getEventProcessor(consumerGroup, function (conn_err, processor) {
             assert.ifError(conn_err);
             processor.init(function (rx_err, partition, payload) {
-                                assert.ifError(rx_err);
+                                assert(!rx_err);
                                 assert(payload.id, message.id);
                                 processor.teardown(function () { done(); });
                         }, function (init_err) {
-                                assert.ifError(init_err);
+                                assert(!init_err);
                                 processor.receive();
                         });
         });
         
         ehp.archive(message, function (err) {
-            assert.ifError(err);
+            assert(!err);
         });
     });
 });

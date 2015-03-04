@@ -27,7 +27,7 @@ function EventHubProvider(config, log, callback) {
 
 EventHubProvider.prototype.archive = function(message, optionsOrCallback, callback) {
     var options = {};
-    if(typeof(optionsOrCallback) == 'function' && !callback) {
+    if (typeof(optionsOrCallback) == 'function' && !callback) {
         callback = optionsOrCallback;
     } else if (optionsOrCallback) {
         options = optionsOrCallback;
