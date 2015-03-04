@@ -71,12 +71,10 @@ describe('The eventhub', function() {
             processor.init(function (rx_err, partition, payload) {
                                 assert.ifError(rx_err);
                                 assert(payload.id, message.id);
-                                processor.teardown()                                
-                                done();
+                                processor.teardown(function () { done(); });
                         }, function (init_err) {
                                 assert.ifError(init_err);
                                 processor.receive();
-                                processor.teardown()
                         });
         });
         
