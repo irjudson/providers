@@ -45,7 +45,7 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
     var messageObject = message.toObject();
    
     messageObject.PartitionKey = messageObject.from;
-    messageObject.RowKey = moment(message.ts).utc().format() + uuid.v4();
+    messageObject.RowKey = moment(message.ts).utc().format() + "-" + uuid.v4();
 
     if (options.flatten || this.flatten_messages) {
         var flatBody = core.services.messages.flatten(messageObject.body);
