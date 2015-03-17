@@ -6,7 +6,7 @@
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.3.13",
+  "version": "0.3.14",
   "main": "./lib",
   "licenses": [
     {
@@ -27,6 +27,7 @@
     "node-amqp-encoder": "git+https://github.com/noodlefrenzy/node-amqp-encoder",
     "node-sbus": "git+https://github.com/noodlefrenzy/node-sbus",
     "node-sbus-amqp10": "git+https://github.com/noodlefrenzy/node-sbus-amqp10",
+    "node-uuid": "^1.4.3",
     "sift": "^0.2.4",
     "streamifier": "^0.1.0"
   },
