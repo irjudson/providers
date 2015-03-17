@@ -1,5 +1,6 @@
 var azure = require('azure')
   , moment = require('moment')
+  , uuid = require('node-uuid')
   , core = require('nitrogen-core');
 
 function AzureArchiveProvider(config, log, callback) {
@@ -44,7 +45,7 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
     var messageObject = message.toObject();
    
     messageObject.PartitionKey = messageObject.from;
-    messageObject.RowKey = moment(message.ts).utc().format();
+    messageObject.RowKey = moment(message.ts).utc().format() + uuid.v4();
 
     if (options.flatten || this.flatten_messages) {
         var flatBody = core.services.messages.flatten(messageObject.body);
