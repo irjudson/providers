@@ -96,6 +96,8 @@ QueuesPubSubProvider.prototype.receive = function(subscription, callback) {
 };
 
 QueuesPubSubProvider.prototype.ackReceive = function(ref, success) {
+    if (!ref || !ref.subscription || !ref.item) return;
+
     var subscriptionKey = QueuesPubSubProvider.subscriptionKey(ref.subscription);
 
     if (success) {
