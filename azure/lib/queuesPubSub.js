@@ -35,8 +35,8 @@ QueuesPubSubProvider.prototype.publish = function(type, item, callback) {
     var self = this;
 
     // for each principal this item is visible_to
-    self.log.info("QueuesPubSubProvider: ITEM: " + JSON.stringify(item));
-    self.log.info("QueuesPubSubProvider: ITEM VISIBLE_TO: " + JSON.stringify(item.visible_to));
+    self.log.debug("QueuesPubSubProvider: ITEM: " + JSON.stringify(item));
+    self.log.debug("QueuesPubSubProvider: ITEM VISIBLE_TO: " + JSON.stringify(item.visible_to));
 
     async.each(item.visible_to, function(visibleToId, visibleToCallback) {
 
@@ -44,10 +44,10 @@ QueuesPubSubProvider.prototype.publish = function(type, item, callback) {
         self.services.subscriptions.find(self.services.principals.servicePrincipal, { principal: visibleToId }, {}, function(err, subscriptions) {
             if (err) return visibleToCallback(err);
 
-            self.log.info("QueuesPubSubProvider: principal: " + visibleToId + " subscriptions: " + JSON.stringify(subscriptions));
+            self.log.debug("QueuesPubSubProvider: principal: " + visibleToId + " subscriptions: " + JSON.stringify(subscriptions));
 
             async.each(subscriptions, function(subscription, subscriptionCallback) {
-                self.log.info("QueuesPubSubProvider: CHECKING subscription: name: " + subscription.id + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter));
+                self.log.debug("QueuesPubSubProvider: CHECKING subscription: name: " + subscription.id + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter));
                 if (subscription.type !== type) return subscriptionCallback();
 
                 //self.log.info("message: " + JSON.stringify(item));
@@ -55,15 +55,15 @@ QueuesPubSubProvider.prototype.publish = function(type, item, callback) {
                 var unfilteredItems = sift(subscription.filter, [item]);
                 if (unfilteredItems.length === 0) return subscriptionCallback();
 
-                self.log.info("QueuesPubSubProvider: MATCHED subscription: name: " + subscription.id + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter));
+                self.log.debug("QueuesPubSubProvider: MATCHED subscription: name: " + subscription.id + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter));
 
                 var messageString = JSON.stringify(item);
                 var subscriptionKey = QueuesPubSubProvider.subscriptionKey(subscription);
 
-                self.log.info("QueuesPubSubProvider: PUBLISHING TO SUBSCRIPTION: " + subscriptionKey);
+                self.log.debug("QueuesPubSubProvider: PUBLISHING TO SUBSCRIPTION: " + subscriptionKey);
 
                 self.queueService.createMessage(subscriptionKey, messageString, function(err) {
-                    self.log.info("QueuesPubSubProvider: FINISHED PUBLISHING TO SUBSCRIPTION: " + subscriptionKey);
+                    self.log.debug("QueuesPubSubProvider: FINISHED PUBLISHING TO SUBSCRIPTION: " + subscriptionKey);
 
                     return subscriptionCallback(err);
                 });
@@ -76,12 +76,12 @@ QueuesPubSubProvider.prototype.receive = function(subscription, callback) {
     var subscriptionKey = QueuesPubSubProvider.subscriptionKey(subscription);
     var self = this;
 
-    self.log.info("QueuesPubSubProvider: CHECKING FOR MESSAGES.");
+    self.log.debug("QueuesPubSubProvider: CHECKING FOR MESSAGES.");
 
     this.queueService.getMessages(subscriptionKey, { numOfMessages: 1 }, function(err, messages, response) {
         if (err) return callback(err);
         if (messages.length === 0) {
-            self.log.info("QueuesPubSubProvider: NO MESSAGES: PAUSING.");
+            self.log.debug("QueuesPubSubProvider: NO MESSAGES: PAUSING.");
             return setTimeout(callback, QueuesPubSubProvider.NO_MESSAGES_WAIT_MILLISECONDS);
         }
 
@@ -92,7 +92,7 @@ QueuesPubSubProvider.prototype.receive = function(subscription, callback) {
             item: messages[0]
         };
 
-        self.log.info("QueuesPubSubProvider: RECEIVED on subscription: name: " + subscription.name + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter) + " item: " + JSON.stringify(item));
+        self.log.debug("QueuesPubSubProvider: RECEIVED on subscription: name: " + subscription.name + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter) + " item: " + JSON.stringify(item));
 
         return callback(null, item, ref);
     });
