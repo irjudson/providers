@@ -35,6 +35,7 @@ QueuesPubSubProvider.prototype.publish = function(type, item, callback) {
     var self = this;
 
     // for each principal this item is visible_to
+    self.log.info("QueuesPubSubProvider: ITEM: " + JSON.stringify(item));
     self.log.info("QueuesPubSubProvider: ITEM VISIBLE_TO: " + JSON.stringify(item.visible_to));
 
     async.each(item.visible_to, function(visibleToId, visibleToCallback) {
