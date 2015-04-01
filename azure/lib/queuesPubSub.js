@@ -35,13 +35,15 @@ QueuesPubSubProvider.prototype.publish = function(type, item, callback) {
     var self = this;
 
     // for each principal this item is visible_to
+    self.log.info("QueuesPubSubProvider: ITEM VISIBLE_TO: " + JSON.stringify(item.visible_to));
+
     async.each(item.visible_to, function(visibleToId, visibleToCallback) {
 
         // query the subscriptions that principal has
         self.services.subscriptions.find(self.services.principals.servicePrincipal, { principal: visibleToId }, {}, function(err, subscriptions) {
             if (err) return visibleToCallback(err);
 
-            //self.log.info('subscriptions: ' + JSON.stringify(subscriptions));
+            self.log.info("QueuesPubSubProvider: principal: " + visibleToId + " subscriptions: " + JSON.stringify(subscriptions));
 
             async.each(subscriptions, function(subscription, subscriptionCallback) {
                 self.log.info("QueuesPubSubProvider: CHECKING subscription: name: " + subscription.id + " type: " + subscription.type + " filter: " + JSON.stringify(subscription.filter));
