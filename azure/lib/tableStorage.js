@@ -3,14 +3,16 @@ var azure = require('azure')
   , uuid = require('node-uuid')
   , core = require('nitrogen-core');
 
-function AzureArchiveProvider(config, log, callback) {
+function TableStorageProvider(config, log, callback) {
     this.flatten = false;
     this.log = log;
     if ('flatten_messages' in config) {
         this.flatten_messages = config.flatten_messages;
     }
 
-    this.azure_table_name = config.azure_table_name || "messages";
+    this.ascending_table_name = config.azure_table_name || "messages";
+    this.descending_table_name = config.azure_table_name + "_descending" || "messages_descending";
+
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
 
@@ -26,15 +28,18 @@ function AzureArchiveProvider(config, log, callback) {
         azure_storage_key
     ).withFilter(retryOperations);
 
-    this.azureTableService.createTableIfNotExists(this.azure_table_name, callback ||
-        function (err, created, response) {
-            if (err) {
-                log.error("Error creating Azure messages table: " + err);
-            }
+    callback = callback || function(err) {
+        if (err) log.error("Error creating Azure messages table: " + err);
+    }
+
+    this.azureTableService.createTableIfNotExists(this.ascending_table_name, function(err, created, response) {
+        if (err) return callback(err);
+
+        this.azureTableService.createTableIfNotExists(this.descending_table_name, callback);
     });
 }
 
-AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, callback) {
+TableStorageProvider.prototype.archive = function(message, optionsOrCallback, callback) {
     var options = {};
     if (typeof(optionsOrCallback) == 'function' && !callback) {
         callback = optionsOrCallback;
@@ -43,9 +48,6 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
     }
 
     var messageObject = message.toObject();
-
-    messageObject.PartitionKey = messageObject.from;
-    messageObject.RowKey = moment(message.ts).utc().format() + "-" + uuid.v4();
 
     if (options.flatten || this.flatten_messages) {
         var flatBody = core.services.messages.flatten(messageObject.body);
@@ -57,9 +59,40 @@ AzureArchiveProvider.prototype.archive = function(message, optionsOrCallback, ca
     messageObject.body = JSON.stringify(messageObject.body);
     messageObject.tags = JSON.stringify(messageObject.tags);
     messageObject.response_to = JSON.stringify(messageObject.response_to);
-    messageObject.visible_to = JSON.stringify(messageObject.visible_to);
 
-    this.azureTableService.insertEntity(this.azure_table_name, messageObject, callback);
+    var ascendingBatch = new azure.TableBatch();
+    var descendingBatch = new azure.TableBatch();
+
+    var correspondanceId = uuid.v4();
+    messageObject.visible_to.forEach(function(visibleToId) {
+        messageObject.PartitionKey = visibleToId;
+        messageObject.visible_to = JSON.stringify([ visibleToId ]);
+
+        messageObject.RowKey = moment(message.ts).utc().format() + "-" + correspondanceId;
+        ascendingBatch.insertEntity(messageObject, { echoContent: false });
+
+        var invertedRowKey = 8640000000000000 - new Date(message.ts).getTime()
+        messageObject.RowKey = invertedRowKey + "-" + correspondanceId;
+        descendingBatch.insertEntity(messageObject, { echoContent: false });
+    });
+
+    this.azureTableService.executeBatch(this.ascending_table_name, batch, function(err) {
+        if (err) return callback(err);
+
+        this.azureTableService.executeBatch(this.descending_table_name, batch, callback);
+    });
 };
 
-module.exports = AzureArchiveProvider;
+TableStorageProvider.prototype.remove = function(principal, filter, callback) {
+    // Not Supported
+
+    return callback();
+};
+
+TableStorageProvider.prototype.find = function(principal, filter, options, callback) {
+    var query = new azure.TableQuery()
+        .top(options.limit || TableStorageProvider.DEFAULT_MAX_ROWS)
+        .where('PartitionKey eq ?', principal.id);
+};
+
+module.exports = TableStorageProvider;

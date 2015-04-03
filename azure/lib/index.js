@@ -1,7 +1,7 @@
 module.exports = {
-    AzureArchiveProvider:   		require('./archive'),
     AzureBlobProvider:      		require('./blob'),
+    AzureEventHubProvider:  		require('./eventhub'),
     AzurePubSubProvider:    		require('./pubSub'),
     AzureQueuesPubSubProvider:  	require('./queuesPubSub'),
-    AzureEventHubProvider:  		require('./eventhub')
+    AzureTableStorageProvider:          require('./tableStorage')
 };
