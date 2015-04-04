@@ -3,5 +3,5 @@ module.exports = {
     AzureEventHubProvider:  		require('./eventhub'),
     AzurePubSubProvider:    		require('./pubSub'),
     AzureQueuesPubSubProvider:  	require('./queuesPubSub'),
-    AzureTableStorageProvider:          require('./tableStorage')
+    AzureTableStorageProvider:      require('./tableStorage')
 };
