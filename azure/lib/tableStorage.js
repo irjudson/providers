@@ -47,6 +47,7 @@ TableStorageProvider.ASCENDING_SORT = 1;
 TableStorageProvider.DESCENDING_SORT = -1;
 
 TableStorageProvider.MAX_DATE_TIMESTAMP = 8640000000000000;
+TableStorageProvider.ID_KEY_LENGTH = TableStorageProvider.MAX_DATE_TIMESTAMP.toString().length;
 
 TableStorageProvider.DEFAULT_MAX_ROWS = 1000;
 
@@ -76,28 +77,35 @@ TableStorageProvider.prototype.archive = function(message, optionsOrCallback, ca
     var messageHash = TableStorageProvider.hashMessage(message).toString();
 
     async.each(messageObject.visible_to, function(visibleToId, visibleToCallback) {
-        messageObject.PartitionKey = visibleToId.toString();
-        messageObject.visible_to = JSON.stringify([ visibleToId ]);
 
-        messageObject.RowKey = moment(message.ts).utc().format() + "-" + messageHash;
-        console.log('asscending table entry ' + visibleToId + ' RowKey: ' + messageObject.RowKey);
+        var clonedMessageObject = JSON.parse(JSON.stringify(messageObject));
 
-        self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, messageObject, function(err) {
+        clonedMessageObject.PartitionKey = visibleToId.toString();
+        clonedMessageObject.RowKey = TableStorageProvider.formatTimeStamp(message.ts.getTime()) + "-" + messageHash;
+
+        self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, clonedMessageObject, { echoContent: false }, function(err) {
             if (err) return visibleToCallback(err);
 
-            var invertedRowKey = TableStorageProvider.MAX_DATE_TIMESTAMP - new Date(message.ts).getTime()
-            messageObject.RowKey = invertedRowKey + "-" + messageHash;
+            var invertedTimestamp = TableStorageProvider.MAX_DATE_TIMESTAMP - new Date(message.ts).getTime();
+            clonedMessageObject.RowKey = TableStorageProvider.formatTimeStamp(invertedTimestamp) + "-" + messageHash;
 
-            self.azureTableService.insertOrReplaceEntity(self.descending_table_name, messageObject, visibleToCallback);
+            self.azureTableService.insertEntity(self.descending_table_name, clonedMessageObject, { echoContent: false }, visibleToCallback);
         });
     }, callback);
+};
+
+TableStorageProvider.formatTimeStamp = function(ts) {
+    var tsString = ts.toString();
+    while (tsString.length < TableStorageProvider.ID_KEY_LENGTH) {
+        tsString = "0" + tsString;
+    }
+
+    return tsString;
 };
 
 TableStorageProvider.hashMessage = function(message) {
     var hashMessageObject = JSON.parse(JSON.stringify(message));;
     delete hashMessageObject.id;
-
-    console.log('hashing message: ' + JSON.stringify(hashMessageObject));
 
     var messageHashBuf = new Buffer(JSON.stringify(hashMessageObject), 'base64');
 
@@ -105,8 +113,6 @@ TableStorageProvider.hashMessage = function(message) {
     md5.update(messageHashBuf.toString('binary'), 'binary');
 
     var messageHash = md5.digest('hex');
-
-    console.log('hash: ' + messageHash);
     return messageHash;
 };
 
@@ -128,10 +134,19 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
         }
     }
 
+    var limit = options.limit || TableStorageProvider.DEFAULT_MAX_ROWS;
+    var partitionKey = principal.id.toString();
+
     var query = new azure.TableQuery()
         .from(table)
-        .top(options.limit || TableStorageProvider.DEFAULT_MAX_ROWS)
-        .where('PartitionKey eq ?', principal.id);
+        .where('PartitionKey eq ?', partitionKey);
+
+    for (var key in filter) {
+        if (key[0] === '$') return callback(new Error("Complex filters not supported: " + JSON.stringify(filter)));
+        if (typeof filter[key] === 'object') return callback(new Error("Filter hierarchy not supported: " + JSON.stringify(filter)));
+
+        query = query.and(key + " eq ?", filter[key]);
+    }
 
     this.azureTableService.queryEntities(query, callback);
 };
