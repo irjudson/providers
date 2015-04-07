@@ -126,7 +126,7 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
     var table = this.descending_table_name;
     if (options.sort) {
         if (options.sort.ts) {
-            if (options.sort.ts !== TableStorageProvider.DESCENDING_SORT || options.sort.ts !== TableStorageProvider.ASCENDING_SORT)
+            if (options.sort.ts !== TableStorageProvider.DESCENDING_SORT && options.sort.ts !== TableStorageProvider.ASCENDING_SORT)
                 return callback (new Error("invalid sort option: " + JSON.stringify(options.sort)));
 
             if (options.sort.ts === TableStorageProvider.ASCENDING_SORT)
