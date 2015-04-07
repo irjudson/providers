@@ -73,25 +73,20 @@ TableStorageProvider.prototype.archive = function(message, optionsOrCallback, ca
     messageObject.tags = JSON.stringify(messageObject.tags);
     messageObject.response_to = JSON.stringify(messageObject.response_to);
 
-    var messageHash = uuid.v4() // TableStorageProvider.hashMessage(message).toString();
-
-    console.dir(messageObject.visible_to);
+    var messageHash = TableStorageProvider.hashMessage(message).toString();
 
     async.each(messageObject.visible_to, function(visibleToId, visibleToCallback) {
         messageObject.PartitionKey = visibleToId.toString();
         messageObject.visible_to = JSON.stringify([ visibleToId ]);
 
         messageObject.RowKey = moment(message.ts).utc().format() + "-" + messageHash;
-        console.log('ascending table entry ' + visibleToId);
-        console.log('PartitionKey: ' + messageObject.PartitionKey);
-        console.log('RowKey: ' + messageObject.RowKey);
+        console.log('asscending table entry ' + visibleToId + ' RowKey: ' + messageObject.RowKey);
 
         self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, messageObject, function(err) {
             if (err) return visibleToCallback(err);
 
             var invertedRowKey = TableStorageProvider.MAX_DATE_TIMESTAMP - new Date(message.ts).getTime()
             messageObject.RowKey = invertedRowKey + "-" + messageHash;
-            console.log('descending table entry ' + visibleToId + ' RowKey: ' + messageObject.RowKey);
 
             self.azureTableService.insertOrReplaceEntity(self.descending_table_name, messageObject, visibleToCallback);
         });
@@ -106,10 +101,10 @@ TableStorageProvider.hashMessage = function(message) {
 
     var messageHashBuf = new Buffer(JSON.stringify(hashMessageObject), 'base64');
 
-    var sha256 = crypto.createHash('sha1');
-    sha256.update(messageHashBuf.toString('binary'), 'binary');
+    var md5 = crypto.createHash('md5');
+    md5.update(messageHashBuf.toString('binary'), 'binary');
 
-    var messageHash = sha256.digest('base64');
+    var messageHash = md5.digest('hex');
 
     console.log('hash: ' + messageHash);
     return messageHash;
