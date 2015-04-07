@@ -1,4 +1,4 @@
-var sbus = require('node-sbus-amqp10')
+var sbus = require('sbus-amqp10')
   , core = require('nitrogen-core');
 
 function EventHubProvider(config, log, callback) {
