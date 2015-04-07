@@ -81,6 +81,7 @@ TableStorageProvider.prototype.archive = function(message, optionsOrCallback, ca
         var clonedMessageObject = JSON.parse(JSON.stringify(messageObject));
 
         clonedMessageObject.PartitionKey = visibleToId.toString();
+        clonedMessageObject.visible_to = [ visibleToId ];
         clonedMessageObject.RowKey = TableStorageProvider.formatTimeStamp(message.ts.getTime()) + "-" + messageHash;
 
         self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, clonedMessageObject, { echoContent: false }, function(err) {
@@ -148,7 +149,22 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
         query = query.and(key + " eq ?", filter[key]);
     }
 
-    this.azureTableService.queryEntities(query, callback);
+    this.azureTableService.queryEntities(query, function(err, messages) {
+        if (err) return callback(err);
+
+        var hydratedMessages = messages.map(function(message) {
+            delete message._;
+            delete message.RowKey;
+            delete message.PartitionKey;
+            delete message.Timestamp;
+
+            message.body = JSON.parse(message.body);
+
+            return new core.models.Message(message);
+        });
+
+        return callback(null, hydratedMessages);
+    });
 };
 
 module.exports = TableStorageProvider;
