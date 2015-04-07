@@ -2,7 +2,6 @@ var async = require('async')
   , azure = require('azure')
   , crypto = require('crypto')
   , moment = require('moment')
-  , uuid = require('node-uuid')
   , core = require('nitrogen-core');
 
 function TableStorageProvider(config, log, callback) {

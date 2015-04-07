@@ -29,7 +29,6 @@
     "node-amqp-encoder": "git+https://github.com/noodlefrenzy/node-amqp-encoder",
     "node-sbus": "git+https://github.com/noodlefrenzy/node-sbus",
     "node-sbus-amqp10": "git+https://github.com/noodlefrenzy/node-sbus-amqp10",
-    "node-uuid": "^1.4.3",
     "sbus": "git+https://github.com/noodlefrenzy/node-sbus",
     "sbus-amqp10": "git+https://github.com/noodlefrenzy/node-sbus-amqp10",
     "sift": "^0.2.4",
@@ -38,7 +37,7 @@
   "devDependencies": {
     "mocha": "~1.20.1",
     "socket.io-client": "~0.9.17",
-    "node-uuid": "1.4.2",
+    "node-uuid": "^1.4.3",
     "winston": "^0.9.0",
     "assert": "1.3"
   },

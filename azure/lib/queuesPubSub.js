@@ -1,6 +1,5 @@
 var async = require('async')
   , azure = require('azure')
-  , redis = require('redis')
   , sift = require('sift');
 
 function QueuesPubSubProvider(config, log) {
