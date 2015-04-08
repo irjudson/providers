@@ -141,11 +141,18 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
         .from(table)
         .where('PartitionKey eq ?', partitionKey);
 
-    for (var key in filter) {
-        if (key[0] === '$') return callback(new Error("Complex filters not supported: " + JSON.stringify(filter)));
-        if (typeof filter[key] === 'object') return callback(new Error("Filter hierarchy not supported: " + JSON.stringify(filter)));
+    // TODO: super basic two mode query mechanism (OR or AND) - replace with real query builder
+    var mode = "and";
+    if (filter.$or) {
+        mode = "or";
+        filter = filter.$or;
+    }
 
-        query = query.and(key + " eq ?", filter[key]);
+    for (var key in filter) {
+        if (mode === "and")
+            query = query.and(key + " eq ?", filter[key]);
+        else
+            query = query.or(key + " eq ?", filter[key]);
     }
 
     this.azureTableService.queryEntities(query, function(err, messages) {
