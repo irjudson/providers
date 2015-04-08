@@ -48,7 +48,7 @@ TableStorageProvider.DESCENDING_SORT = -1;
 TableStorageProvider.MAX_DATE_TIMESTAMP = 8640000000000000;
 TableStorageProvider.ID_KEY_LENGTH = TableStorageProvider.MAX_DATE_TIMESTAMP.toString().length;
 
-TableStorageProvider.DEFAULT_MAX_ROWS = 1000;
+TableStorageProvider.DEFAULT_MAX_ROWS = 200;
 
 TableStorageProvider.prototype.archive = function(message, optionsOrCallback, callback) {
     var options = {};
@@ -139,6 +139,7 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
 
     var query = new azure.TableQuery()
         .from(table)
+        .top(limit)
         .where('PartitionKey eq ?', partitionKey);
 
     // TODO: super basic two mode query mechanism (OR or AND) - replace with real query builder
