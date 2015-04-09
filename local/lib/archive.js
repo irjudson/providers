@@ -9,7 +9,7 @@ NullArchiveProvider.prototype.initialize = function(callback) {
     if (callback) return callback();
 };
 
-NullArchiveProvider.prototype.remove = function(message, callback) {
+NullArchiveProvider.prototype.remove = function(principal, filter, callback) {
     if (callback) return callback();
 };
 
