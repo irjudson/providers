@@ -14,7 +14,7 @@ function TableStorageProvider(config, log, callback) {
     }
 
     this.ascending_table_name = config.azure_table_name || "messages";
-    this.descending_table_name = this.ascending_table_name + "Descending" || "messagesDescending";
+    this.descending_table_name = this.ascending_table_name + "Descending";
 
     var azure_storage_account = config.azure_storage_account || process.env.AZURE_STORAGE_ACCOUNT;
     var azure_storage_key = config.azure_storage_key || process.env.AZURE_STORAGE_KEY;
@@ -91,7 +91,11 @@ TableStorageProvider.prototype.archive = function(message, optionsOrCallback, ca
 
             self.azureTableService.insertEntity(self.descending_table_name, clonedMessageObject, { echoContent: false }, visibleToCallback);
         });
-    }, callback);
+    }, function(err) {
+        if (err) self.log.error('Azure TableStorageProvider: insertOrReplaceEntity failed: ' + err);
+
+        return callback(err);
+    });
 };
 
 TableStorageProvider.formatTimeStamp = function(ts) {
