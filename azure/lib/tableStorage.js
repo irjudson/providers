@@ -1,5 +1,5 @@
 var async = require('async')
-  , azure = require('azure')
+  , azure = require('azure-storage')
   , crypto = require('crypto')
   , moment = require('moment')
   , core = require('nitrogen-core');
@@ -80,22 +80,37 @@ TableStorageProvider.prototype.archive = function(message, optionsOrCallback, ca
         var clonedMessageObject = JSON.parse(JSON.stringify(messageObject));
 
         clonedMessageObject.PartitionKey = visibleToId.toString();
-        clonedMessageObject.visible_to = [ visibleToId ];
+        clonedMessageObject.visible_to = JSON.stringify([ visibleToId ]);
         clonedMessageObject.RowKey = TableStorageProvider.formatTimeStamp(message.ts.getTime()) + "-" + messageHash;
 
-        self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, clonedMessageObject, { echoContent: false }, function(err) {
-            if (err) return visibleToCallback(err);
+        var entifiedMessageObject = TableStorageProvider.Entify(clonedMessageObject);
+        self.azureTableService.insertOrReplaceEntity(self.ascending_table_name, entifiedMessageObject, { echoContent: false }, function(err) {
+            if (err) {
+                self.log.error('Azure TableStorageProvider: ascending insertOrReplaceEntity failed: ' + err);
+                return visibleToCallback(err);
+            }
 
             var invertedTimestamp = TableStorageProvider.MAX_DATE_TIMESTAMP - new Date(message.ts).getTime();
-            clonedMessageObject.RowKey = TableStorageProvider.formatTimeStamp(invertedTimestamp) + "-" + messageHash;
+            entifiedMessageObject.RowKey = azure.TableUtilities.entityGenerator.String(TableStorageProvider.formatTimeStamp(invertedTimestamp) + "-" + messageHash);
 
-            self.azureTableService.insertEntity(self.descending_table_name, clonedMessageObject, { echoContent: false }, visibleToCallback);
+            self.azureTableService.insertEntity(self.descending_table_name, entifiedMessageObject, { echoContent: false }, function(err) {
+                if (err) self.log.error('Azure TableStorageProvider: descending insertOrReplaceEntity failed: ' + err);
+                return visibleToCallback(err);
+            });
         });
     }, function(err) {
         if (err) self.log.error('Azure TableStorageProvider: insertOrReplaceEntity failed: ' + err);
 
         return callback(err);
     });
+};
+
+TableStorageProvider.Entify = function(obj) {
+    for (var key in obj) {
+        obj[key] = azure.TableUtilities.entityGenerator.String(obj[key]);
+    }
+
+    return obj;
 };
 
 TableStorageProvider.formatTimeStamp = function(ts) {
@@ -126,7 +141,6 @@ TableStorageProvider.prototype.remove = function(principal, filter, callback) {
 };
 
 TableStorageProvider.prototype.find = function(principal, filter, options, callback) {
-
     var table = this.descending_table_name;
     if (options.sort) {
         if (options.sort.ts) {
@@ -142,7 +156,6 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
     var partitionKey = principal.id.toString();
 
     var query = new azure.TableQuery()
-        .from(table)
         .top(limit)
         .where('PartitionKey eq ?', partitionKey);
 
@@ -160,14 +173,21 @@ TableStorageProvider.prototype.find = function(principal, filter, options, callb
             query = query.or(key + " eq ?", filter[key]);
     }
 
-    this.azureTableService.queryEntities(query, function(err, messages) {
+    this.azureTableService.queryEntities(table, query, null, function(err, result) {
         if (err) return callback(err);
 
-        var hydratedMessages = messages.map(function(message) {
+        var hydratedMessages = result.entries.map(function(message) {
             delete message._;
             delete message.RowKey;
             delete message.PartitionKey;
             delete message.Timestamp;
+            delete message['.metadata'];
+
+            for (var key in message) {
+                message[key] = message[key]._;
+            }
+
+            console.dir(message);
 
             message.body = JSON.parse(message.body);
 
