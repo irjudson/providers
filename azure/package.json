@@ -6,7 +6,7 @@
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.3.30",
+  "version": "0.3.31",
   "main": "./lib",
   "licenses": [
     {
@@ -21,7 +21,7 @@
     "amqp10": "^1.0.2",
     "async": "^0.2.10",
     "azure": "^0.9.16",
-    "azure-storage": "^0.4.3",
+    "azure-storage": "^0.4.4",
     "moment": "^2.10.0",
     "nitrogen": "^0.2.24",
     "nitrogen-core": "^0.3.25",
