@@ -1,12 +1,12 @@
 {
-  "name": "nitrogen-local-providers",
+  "name": "nitrogen-mongodb-providers",
   "homepage": "https://github.com/nitrogenjs/providers",
   "repository": {
     "type": "git",
     "url": "https://github.com/nitrogenjs/providers.git"
   },
   "author": "Tim Park <timfpark@gmail.com>",
-  "version": "0.3.16",
+  "version": "0.3.7",
   "licenses": [
     {
       "type": "Apache",
@@ -19,8 +19,7 @@
   },
   "dependencies": {
     "async": "~0.2.10",
-    "moment": "~2.8.3",
-    "sift": "~0.1.0"
+    "nitrogen-core": "^0.3.20"
   },
   "devDependencies": {
     "mocha": "~1.20.1"
