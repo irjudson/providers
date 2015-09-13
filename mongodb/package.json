@@ -7,12 +7,7 @@
   },
   "author": "Tim Park <timfpark@gmail.com>",
   "version": "0.3.7",
-  "licenses": [
-    {
-      "type": "Apache",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-    }
-  ],
+  "license" : "MIT",
   "main": "./lib",
   "engines": {
     "node": "0.10.x"
